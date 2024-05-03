@@ -3,10 +3,11 @@ import React from "react";
 import blockchainImg from "./blockchain.svg";
 import { Button, Spacer } from "@nextui-org/react";
 import { FaArrowAltCircleRight } from "react-icons/fa";
+import Link from "next/link";
 
 const LandingPage = () => {
   return (
-    <div>
+    <div className="">
       <div className="flex gap-10 min-h-[500px] items-center justify-center">
         <div className="max-w-[800px]">
           <h1 className="text-5xl font-bold">
@@ -21,7 +22,10 @@ const LandingPage = () => {
           </p>
           <Spacer y={4} />
           <Button color="primary" href="/create-contract">
-            Create Contract <FaArrowAltCircleRight />
+            <Link href="/create-contract">
+              Create Contract
+              <FaArrowAltCircleRight />
+            </Link>
           </Button>
         </div>
 

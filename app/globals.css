@@ -8,15 +8,32 @@
   --background-end-rgb: 255, 255, 255;
 }
 
+.gradient-layered-effect {
+  background-image: radial-gradient(70% 30% at 50% 0, #fff 60%, transparent),
+    radial-gradient(50% 50% at 50% 10%, #fff 30%, transparent),
+    radial-gradient(
+      84.51% 92.7% at 106.7% 103.96%,
+      #cce3fd 40.17%,
+      #cbd0fe 100%
+    );
+}
+
+.text-muted {
+  color: #636363;
+}
+
+.gradient-text {
+  background-image: linear-gradient(to right, #cce3fd, #cbd0fe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
     --background-start-rgb: 0, 0, 0;
     --background-end-rgb: 0, 0, 0;
   }
-}
-
-body {
 }
 
 @layer utilities {

@@ -2,8 +2,7 @@
 
 import { useUserStore } from "@/lib/states/userStore";
 import { ContractActions } from "@/utils/connectEthersContract";
-import { Button, Divider, Input, Textarea } from "@nextui-org/react";
-import { isError } from "ethers";
+import { Button, Divider, Input } from "@nextui-org/react";
 import { FormEvent, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import MilestoneInputs from "./MilestoneInputs";
@@ -76,7 +75,7 @@ const CreateContractForm = () => {
 
   return (
     <form
-      className="border rounded m-5 shadow p-5 flex flex-col justify-center gap-5 "
+      className="border rounded m-5 shadow p-5 flex flex-col justify-center gap-5 bg-background"
       onSubmit={(e) => handleCreateProject(e)}
     >
       <div className="text-2xl font-semibold">

@@ -22,13 +22,18 @@ import {
   ModalBody,
   ModalFooter,
 } from "@nextui-org/modal";
+import SignUpButton from "./SignUpButton";
+import { usePathname } from "next/navigation";
+import { ContractActions } from "@/utils/connectEthersContract";
 
 const Navbar = () => {
+  const path = usePathname();
   const setAddress = useUserStore((state) => state.setAddress);
   const address = useUserStore((state) => state.address);
   const [accounts, setAccounts] = useState([]);
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [isLoading, setIsLoading] = useState(false);
+  const [username, setUsername] = useState("");
 
   const fetchUserAddress = useCallback(async () => {
     setIsLoading(true);
@@ -38,10 +43,21 @@ const Navbar = () => {
 
     setAccounts([]);
     if (accounts.length > 1) {
-      onOpen();
-      setAccounts(accounts);
+      const accountIndex = localStorage.getItem("selectedAccountIndex");
+      if (accountIndex) {
+        setAddress(accounts[parseInt(accountIndex)]);
+        const user = await ContractActions.getUser(
+          accounts[parseInt(accountIndex)]
+        );
+        setUsername(user.name || "");
+      } else {
+        onOpen();
+        setAccounts(accounts);
+      }
     } else {
       setAddress(accounts[0]);
+      const user = await ContractActions.getUser(accounts[0]);
+      setUsername(user.name || "");
     }
     setIsLoading(false);
   }, [onOpen, setAddress]);
@@ -51,6 +67,7 @@ const Navbar = () => {
       alert("Please install MetaMask first.");
       return;
     }
+
     fetchUserAddress();
   }, [fetchUserAddress]);
 
@@ -72,18 +89,26 @@ const Navbar = () => {
         <NavbarItem>
           <Link
             href="/contract-list"
-            className="w-[110px] flex items-center gap-1"
+            className={`w-[110px] flex items-center gap-1 ${
+              path === "/contract-list" ? "text-primary-200" : ""
+            }`}
           >
-            <MdDashboard />
+            <MdDashboard
+              className={path === "/contract-list" ? "text-primary-200" : ""}
+            />
             Contracts
           </Link>
         </NavbarItem>
         <NavbarItem>
           <Link
-            href="/create-contract"
-            className="w-[110px] flex items-center gap-1"
+            href="/search-profile"
+            className={`w-[110px] flex items-center gap-1 ${
+              path === "/search-profile" ? "text-primary-200" : ""
+            }`}
           >
-            <FaSearch />
+            <FaSearch
+              className={path === "/search-profile" ? "text-primary-200" : ""}
+            />
             Search
           </Link>
         </NavbarItem>
@@ -95,27 +120,25 @@ const Navbar = () => {
         ) : (
           <>
             <NavbarItem>
-              <Button
-                as={Link}
-                color="primary"
-                href="#"
-                variant="flat"
-                onClick={async () => {
-                  if (address) {
+              {address ? (
+                <Button
+                  color="primary"
+                  variant="flat"
+                  onClick={() => {
                     setAddress(null);
-                    return;
-                  }
-                }}
-              >
-                {address ? "Log Out" : "Sign Up"}
-              </Button>
+                    localStorage.removeItem("selectedAccountIndex");
+                  }}
+                >
+                  Log Out
+                </Button>
+              ) : (
+                <SignUpButton />
+              )}
             </NavbarItem>
             <NavbarItem>
               {" "}
               <Button
-                as={Link}
                 color="primary"
-                href="#"
                 onClick={async () => {
                   if (!(window as any).ethereum) {
                     alert("Please install MetaMask first.");
@@ -125,7 +148,11 @@ const Navbar = () => {
                   await fetchUserAddress();
                 }}
               >
-                {address ? address : "Sign In"}
+                {address
+                  ? username.length > 0
+                    ? username
+                    : address
+                  : "Sign In"}
               </Button>
               <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
                 <ModalContent>
@@ -138,9 +165,17 @@ const Navbar = () => {
                             return (
                               <Button
                                 key={index}
-                                onClick={() => {
+                                onClick={async () => {
                                   setAddress(acc);
+                                  const user = await ContractActions.getUser(
+                                    acc
+                                  );
+                                  setUsername(user.name || "");
                                   onOpenChange();
+                                  localStorage.setItem(
+                                    "selectedAccountIndex",
+                                    index.toString()
+                                  );
                                 }}
                               >
                                 {acc}

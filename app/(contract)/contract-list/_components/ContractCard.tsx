@@ -2,6 +2,7 @@
 import { MilestoneStatus, Project } from "@/lib/models/projects";
 import { useContractStore } from "@/lib/states/contractStore";
 import { useUserStore } from "@/lib/states/userStore";
+import { ContractActions } from "@/utils/connectEthersContract";
 import {
   Button,
   Chip,
@@ -226,6 +227,10 @@ const ContractCard = ({
       </div>
 
       <Spacer y={5} />
+
+      {/* <Button onPress={async () => await ContractActions.addReview()}>
+        Add Review
+      </Button> */}
     </div>
   );
 };

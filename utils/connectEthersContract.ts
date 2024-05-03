@@ -409,7 +409,7 @@ const USER_MANAGER_ABI = [
 ];
 const USER_MANAGER_ADDRESS = "0xe27F86A3F1914dD87Ef8e35e17264ed4aB5D7AD9";
 
-export const connectEthersContract = async () => {
+export const connectContractGuardContract = async () => {
   const signer = await new ethers.BrowserProvider(
     (window as any).ethereum
   ).getSigner();
@@ -421,11 +421,33 @@ export const connectEthersContract = async () => {
     CONTRACT_GUARD_ABI,
     await signer
   );
-  console.log(contract);
+  return contract;
+};
+export const connectUserManagerContract = async () => {
+  const signer = await new ethers.BrowserProvider(
+    (window as any).ethereum
+  ).getSigner();
+
+  if (!signer) return null;
+
+  const contract = await new ethers.Contract(
+    USER_MANAGER_ADDRESS,
+    USER_MANAGER_ABI,
+    await signer
+  );
   return contract;
 };
 
 export const ContractActions = {
+  getUser: async (userAddress: string) => {
+    const contract = await connectUserManagerContract();
+    if (!contract) return;
+
+    const user = await contract.users(userAddress);
+    console.log(user);
+    return user;
+  },
+
   addProject: async ({
     projectId,
     projectName,
@@ -443,7 +465,7 @@ export const ContractActions = {
     statuses: number[];
     rewards: number[];
   }): Promise<void> => {
-    const contract = await connectEthersContract();
+    const contract = await connectContractGuardContract();
     if (!contract) return;
 
     const totalReward = rewards.reduce((sum, reward) => sum + reward, 0);
@@ -479,7 +501,7 @@ export const ContractActions = {
     milestoneIndex: number,
     newStatus: number
   ): Promise<void> => {
-    const contract = await connectEthersContract();
+    const contract = await connectContractGuardContract();
     if (!contract) return;
 
     await contract.changeMilestoneStatus(projectId, milestoneIndex, newStatus);
@@ -489,33 +511,35 @@ export const ContractActions = {
     projectId: number,
     milestoneIndex: number
   ): Promise<void> => {
-    const contract = await connectEthersContract();
+    const contract = await connectContractGuardContract();
     if (!contract) return;
 
     await contract.payForFinishedMilestone(projectId, milestoneIndex);
   },
 
   getProjectsByUser: async (userAddress: string): Promise<Project[]> => {
-    const contract = await connectEthersContract();
+    const contract = await connectContractGuardContract();
     if (!contract) throw new Error("Contract not connected");
 
     const projects = await contract.getProjectsByUser(
       userAddress,
       USER_MANAGER_ADDRESS
     );
-
+    console.log(projects[1]);
     const result: Project[] = projects.map(
-      ([name, client, freelancer, milestones]: [
-        string,
-        string,
-        string,
-        [string, number, number][]
-      ]) =>
+      ([
+        name,
+        employerAddress,
+        employeeAddress,
+        milestones,
+        employerReview,
+        employeeReview,
+      ]: [string, string, string, [string, number, number][], any, any]) =>
         // map into Project type
         ({
           name,
-          employerAddress: client,
-          employeeAddress: freelancer,
+          employerAddress,
+          employeeAddress,
           // map milestones
           milestones: milestones.map(([description, status, reward]) => {
             return {
@@ -524,9 +548,37 @@ export const ContractActions = {
               reward: parseFloat(reward.toString()),
             };
           }),
+          employerReview: {
+            comment: employerReview.comment,
+            rating: parseFloat(employerReview.rating.toString()),
+          },
+          employeeReview: {
+            comment: employeeReview.comment,
+            rating: parseFloat(employeeReview.rating.toString()),
+          },
         })
     );
     console.log(result);
     return result;
+  },
+
+  addReview: async ({
+    projectId,
+    rating,
+    comment,
+  }: {
+    projectId: string;
+    rating: number;
+    comment: string;
+  }): Promise<void> => {
+    const contract = await connectContractGuardContract();
+    if (!contract) return;
+
+    try {
+      const result = await contract.addReview(projectId, rating, comment);
+      return result;
+    } catch (e) {
+      console.log(e);
+    }
   },
 };

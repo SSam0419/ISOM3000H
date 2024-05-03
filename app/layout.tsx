@@ -18,7 +18,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className}`}>
+      <body
+        className={`${inter.className} gradient-layered-effect min-h-screen`}
+      >
         <NextUIProvider>
           <Navbar />
           <div className="px-16 py-12">{children}</div>

@@ -21,7 +21,7 @@ export default function RootLayout({
       <body className={`${inter.className}`}>
         <NextUIProvider>
           <Navbar />
-          {children}
+          <div className="px-16 py-12">{children}</div>
         </NextUIProvider>
       </body>
     </html>

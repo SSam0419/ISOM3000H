@@ -2,12 +2,25 @@
 import { MilestoneStatus, Project } from "@/lib/models/projects";
 import { useContractStore } from "@/lib/states/contractStore";
 import { useUserStore } from "@/lib/states/userStore";
-import { Button, Chip, Spacer, Spinner, Tooltip } from "@nextui-org/react";
+import {
+  Button,
+  Chip,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Spacer,
+  Spinner,
+  Tooltip,
+  useDisclosure,
+} from "@nextui-org/react";
 import React from "react";
 import { BiMoneyWithdraw } from "react-icons/bi";
 import { CiBullhorn } from "react-icons/ci";
 import { FaCheckCircle } from "react-icons/fa";
 import { FaCircleCheck, FaCircleInfo } from "react-icons/fa6";
+import { IoPeopleSharp } from "react-icons/io5";
 import { LuAward } from "react-icons/lu";
 import { MdPendingActions } from "react-icons/md";
 import { TbMoneybag } from "react-icons/tb";
@@ -31,9 +44,19 @@ const ContractCard = ({
     totalReward += milestone.reward;
   }
 
+  // for opening confirmation modal for settling reward
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+
+  const isEmployer =
+    project.employerAddress.toLowerCase() === userAddress?.toLowerCase(); // check if user is employer
+
   return (
     <div className="w-full bg-background border border-default shadow p-5 rounded-xl">
       <div className="text-3xl font-bold">{project.name}</div>
+      <div className="text-foreground-400 flex items-center gap-2">
+        <IoPeopleSharp />
+        My Role: {isEmployer ? "Employer" : "Employee"}
+      </div>
       <Spacer y={5} />
       <div className="">
         <span className="font-semibold">Employer </span>
@@ -76,7 +99,7 @@ const ContractCard = ({
                   showButton ||
                   milestone.status == MilestoneStatus.Finished ||
                   milestone.status == MilestoneStatus.Processing
-                    ? "px-1 py-1 rounded border border-success shadow"
+                    ? "px-1 py-1 rounded border border-success shadow bg-success-50"
                     : ""
                 }`}
               >
@@ -122,24 +145,51 @@ const ContractCard = ({
                   {milestone.description}
                 </p>
                 {milestone.status === MilestoneStatus.Finished && (
-                  <Button
-                    isDisabled={project.employeeAddress == userAddress}
-                    color="danger"
-                    onClick={() =>
-                      updateContractStatus({
-                        contractIdx: projectIdx,
-                        milestoneIdx: milestoneIndex,
-                        status: MilestoneStatus.Settled,
-                      })
-                    }
-                  >
-                    <LuAward />
-                    Settle Reward
-                  </Button>
+                  <>
+                    <Button
+                      isDisabled={!isEmployer}
+                      color="danger"
+                      onPress={onOpen}
+                    >
+                      <LuAward />
+                      Settle Reward
+                    </Button>
+                    <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+                      <ModalContent>
+                        {(onClose) => (
+                          <>
+                            <ModalHeader>Settle Reward</ModalHeader>
+                            <ModalBody>
+                              <p>
+                                Are you sure you want to settle the reward for
+                                this milestone?
+                              </p>
+                            </ModalBody>
+                            <ModalFooter>
+                              <Button onClick={() => onClose()}>Cancel</Button>
+
+                              <Button
+                                color="success"
+                                onClick={() =>
+                                  updateContractStatus({
+                                    contractIdx: projectIdx,
+                                    milestoneIdx: milestoneIndex,
+                                    status: MilestoneStatus.Settled,
+                                  })
+                                }
+                              >
+                                Confirm
+                              </Button>
+                            </ModalFooter>
+                          </>
+                        )}
+                      </ModalContent>
+                    </Modal>
+                  </>
                 )}
                 {milestone.status === MilestoneStatus.Processing && (
                   <Button
-                    isDisabled={project.employeeAddress !== userAddress}
+                    isDisabled={isEmployer}
                     color="success"
                     onClick={() =>
                       updateContractStatus({
@@ -155,7 +205,7 @@ const ContractCard = ({
                 )}
                 {milestone.status === MilestoneStatus.Pending && showButton && (
                   <Button
-                    isDisabled={project.employeeAddress !== userAddress}
+                    isDisabled={isEmployer}
                     color="primary"
                     onClick={() =>
                       updateContractStatus({

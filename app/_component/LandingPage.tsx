@@ -1,23 +1,28 @@
 import Image from "next/image";
 import React from "react";
 import blockchainImg from "./blockchain.svg";
-import { Spacer } from "@nextui-org/react";
+import { Button, Spacer } from "@nextui-org/react";
+import { FaArrowAltCircleRight } from "react-icons/fa";
 
-const Instruction = () => {
+const LandingPage = () => {
   return (
     <div>
       <div className="flex gap-10 min-h-[500px] items-center justify-center">
         <div className="max-w-[800px]">
           <h1 className="text-5xl font-bold">
-            <p className="font-normal">Protect your contract with</p>
-            <Spacer y={2} />
-            <p className="leading-tight"> ContractGuard</p>
+            <p className="leading-tight">
+              Protect your contract with ContractGuard
+            </p>
           </h1>
           <Spacer y={4} />
-          <p className="text-2xl ">
+          <p className="text-xl ">
             A decentralised application that protects contractors, vendors, and
             freelancers.
           </p>
+          <Spacer y={4} />
+          <Button color="primary" href="/create-contract">
+            Create Contract <FaArrowAltCircleRight />
+          </Button>
         </div>
 
         <Image
@@ -31,4 +36,4 @@ const Instruction = () => {
   );
 };
 
-export default Instruction;
+export default LandingPage;

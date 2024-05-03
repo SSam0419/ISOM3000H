@@ -1,10 +1,10 @@
-import Instruction from "./_component/Instruction";
+import LandingPage from "./_component/LandingPage";
 import UserWallet from "./_component/UserWallet";
 
 export default function Home() {
   return (
-    <div className="p-10">
-      <Instruction />
+    <div className="">
+      <LandingPage />
       {/* <UserWallet /> */}
     </div>
   );

@@ -1,18 +1,25 @@
 "use client";
 
+import { useUserStore } from "@/lib/states/userStore";
+import { ContractActions } from "@/utils/connectEthersContract";
 import { Button, Divider, Input, Textarea } from "@nextui-org/react";
-import { useState } from "react";
+import { isError } from "ethers";
+import { FormEvent, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
+import MilestoneInputs from "./MilestoneInputs";
 
 const CreateContractForm = () => {
+  const userAddress = useUserStore((state) => state.address);
+  const [isLoading, setIsLoading] = useState(false);
   const [projectName, setProjectName] = useState("");
   const [employeeAddress, setEmployeeAddress] = useState("");
-  const [employerAddress, setEmployerAddress] = useState("");
   const [milestones, setMilestones] = useState([
-    { description: "", reward: 0 },
+    { description: "", reward: 1 },
   ]);
+  const [hint, setHint] = useState({ message: "", isError: false });
 
   const handleAddMilestone = () => {
-    setMilestones([...milestones, { description: "", reward: 0 }]);
+    setMilestones([...milestones, { description: "", reward: 1 }]);
   };
 
   const handleMilestoneChange = (index: number, key: string, value: string) => {
@@ -26,38 +33,64 @@ const CreateContractForm = () => {
     });
   };
 
-  const renderMilestoneInputs = () => {
-    return milestones.map((milestone, index) => (
-      <div
-        key={index}
-        className="flex flex-col gap-5 items-center justify-center"
-      >
-        <p className="text-xl">Milestone {index + 1}</p>
-        <Textarea
-          label={`Milestone ${index + 1} Description`}
-          placeholder="e.g. finish system design"
-          value={milestone.description}
-          onChange={(e) =>
-            handleMilestoneChange(index, "description", e.target.value)
-          }
-        />
-        <Input
-          label={`Milestone ${index + 1} Reward`}
-          type="number"
-          value={milestone.reward.toString()}
-          onChange={(e) =>
-            handleMilestoneChange(index, "reward", e.target.value)
-          }
-        />
-      </div>
-    ));
+  const handleCreateProject = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!userAddress) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    //generate random id for the project
+    const projectId = uuidv4();
+    console.log(projectId);
+
+    //create a dummy project
+    try {
+      const result = await ContractActions.addProject({
+        projectId,
+        projectName,
+        client: userAddress,
+        freelancer: employeeAddress,
+        descriptions: milestones.map((milestone) => milestone.description),
+        statuses: milestones.map(() => 0),
+        rewards: milestones.map((milestone) => milestone.reward),
+      });
+      console.log(result);
+      setHint({ message: "Contract created successfully", isError: false });
+      // reset form
+      setProjectName("");
+      setEmployeeAddress("");
+      setMilestones([{ description: "", reward: 1 }]);
+    } catch (e) {
+      console.error(e);
+      setHint({
+        message: (e as any).shortMessage || "Error creating contract",
+        isError: true,
+      });
+    }
+
+    setIsLoading(false);
   };
 
   return (
-    <div className="border rounded m-5 shadow p-5 flex flex-col justify-center gap-5 ">
-      <p className="text-2xl font-semibold">Create Contract</p>
-
+    <form
+      className="border rounded m-5 shadow p-5 flex flex-col justify-center gap-5 "
+      onSubmit={(e) => handleCreateProject(e)}
+    >
+      <div className="text-2xl font-semibold">
+        Create Contract
+        <p className="text-default-500 text-sm font-light">
+          only employer can create contract
+        </p>
+      </div>
+      {userAddress == null && (
+        <p className="text-danger">You must connect to your wallet first</p>
+      )}
       <Input
+        isRequired
+        isDisabled={isLoading || userAddress == null}
         name="projectName"
         label="Project Name"
         placeholder="e.g. Software Development"
@@ -65,21 +98,30 @@ const CreateContractForm = () => {
         onChange={(e) => setProjectName(e.target.value)}
       />
       <Input
+        isReadOnly
+        isDisabled={isLoading || userAddress == null}
+        label="Employer Address (My Address)"
+        value={userAddress || ""}
+      />
+      <Input
+        isRequired
+        isDisabled={isLoading || userAddress == null}
         label="Employee Address"
         placeholder="e.g. 0x123..."
         value={employeeAddress}
         onChange={(e) => setEmployeeAddress(e.target.value)}
       />
-      <Input
-        label="Employers Address"
-        placeholder="e.g. 0x456..."
-        value={employerAddress}
-        onChange={(e) => setEmployerAddress(e.target.value)}
-      />
       {/* render input fields for each milestone */}
-      <div className="border rounded-large p-5 flex flex-col gap-5 shadow">
-        {renderMilestoneInputs()}
+      <div className="flex flex-col gap-5">
+        <MilestoneInputs
+          handleMilestoneChange={handleMilestoneChange}
+          isLoading={isLoading}
+          milestones={milestones}
+          userAddress={userAddress}
+        />
         <Button
+          type="button"
+          isDisabled={isLoading || userAddress == null}
           color="secondary"
           variant="bordered"
           onClick={handleAddMilestone}
@@ -88,8 +130,15 @@ const CreateContractForm = () => {
         </Button>
       </div>
       <Divider />
-      <Button color="primary">Create Contract</Button>
-    </div>
+      {hint.message && (
+        <p className={`${hint.isError ? "text-danger" : "text-success"}`}>
+          {hint.message}
+        </p>
+      )}
+      <Button color="primary" type="submit" isLoading={isLoading}>
+        Create Contract
+      </Button>
+    </form>
   );
 };
 export default CreateContractForm;

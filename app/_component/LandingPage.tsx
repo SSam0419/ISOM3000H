@@ -21,8 +21,11 @@ const LandingPage = () => {
             freelancers.
           </p>
           <Spacer y={4} />
-          <Button color="primary" href="/create-contract">
-            <Link href="/create-contract">
+          <Button color="primary" href="/create-contract" className="">
+            <Link
+              href="/create-contract"
+              className="w-full flex items-center gap-1"
+            >
               Create Contract
               <FaArrowAltCircleRight />
             </Link>

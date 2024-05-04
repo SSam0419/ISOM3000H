@@ -1,5 +1,6 @@
 import { Project } from "@/lib/models/projects";
 import { ethers } from "ethers";
+import { register } from "module";
 
 //my address : 0x931E87F00e430E8abb561c5facFCe01E9bd53321
 const CONTRACT_GUARD_ABI = [
@@ -446,6 +447,24 @@ export const ContractActions = {
     const user = await contract.users(userAddress);
     console.log(user);
     return user;
+  },
+  registerUser: async ({
+    username,
+    title,
+  }: {
+    username: string;
+    title: string;
+  }) => {
+    const contract = await connectUserManagerContract();
+    if (!contract) return;
+
+    try {
+      const result = await contract.registerUser(username, title);
+      return result;
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
   },
 
   addProject: async ({

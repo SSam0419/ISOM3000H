@@ -1,7 +1,7 @@
 "use client";
 
 import { useUserStore } from "@/lib/states/userStore";
-import { ContractActions } from "@/utils/connectEthersContract";
+import { ContractActions } from "@/utils/contractActions";
 import { Button, Divider, Input } from "@nextui-org/react";
 import { FormEvent, useState } from "react";
 import { v4 as uuidv4 } from "uuid";

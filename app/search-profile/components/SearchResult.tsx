@@ -1,7 +1,7 @@
 "use client";
 
 import { Milestone, MilestoneStatus } from "@/lib/models/projects";
-import { ContractActions } from "@/utils/connectEthersContract";
+import { ContractActions } from "@/utils/contractActions";
 import { Chip, Divider, Spacer } from "@nextui-org/react";
 import { useSearchParams } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
@@ -79,6 +79,14 @@ const SearchResult = () => {
                     milestone.status === MilestoneStatus.Finished
                 ).length;
 
+                const totalReward = project.milestones.reduce(
+                  (sum: number, milestone: Milestone) => {
+                    sum += milestone.reward;
+                    return sum;
+                  },
+                  0
+                );
+
                 const totalRewardClaimed = project.milestones.reduce(
                   (sum: number, milestone: Milestone) => {
                     if (milestone.status === MilestoneStatus.Settled) {
@@ -93,6 +101,11 @@ const SearchResult = () => {
                   project.employeeAddress.toLowerCase() ===
                   search.toLowerCase();
 
+                const isProjectDone = project.milestones.every(
+                  (milestone: Milestone) =>
+                    milestone.status === MilestoneStatus.Settled
+                );
+
                 return (
                   <div
                     key={index}
@@ -102,7 +115,11 @@ const SearchResult = () => {
                       <span className="font-semibold text-lg mr-2">
                         {project.name}
                       </span>
-                      <Chip color="primary">In Progress</Chip>
+                      {isProjectDone ? (
+                        <Chip color="success">Settled</Chip>
+                      ) : (
+                        <Chip color="primary">In Progress</Chip>
+                      )}
                     </div>
                     <Spacer y={4} />
                     <div className="flex gap-1 items-center">
@@ -115,18 +132,16 @@ const SearchResult = () => {
                     <div>
                       <div className="flex gap-1 items-center">
                         <FaMountainSun />
-                        Milestones Done :{" "}
-                        {
-                          project.milestones.filter(
-                            (milestone: any) =>
-                              milestone.status === MilestoneStatus.Settled ||
-                              milestone.status === MilestoneStatus.Finished
-                          ).length
-                        }
+                        Milestones Done : {totalMilestoneDone}
                       </div>
                       <div className="flex gap-1 items-center">
                         <FaEthereum />
-                        Reward Claimed : {totalRewardClaimed}
+                        <div className="flex items-end">
+                          <span>Reward Claimed : {totalRewardClaimed} </span>
+                          <span className="font-light text-sm text-muted">
+                            /{totalReward}
+                          </span>
+                        </div>
                       </div>
                       <div className="flex gap-1 items-center">
                         <FaStar />

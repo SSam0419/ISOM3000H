@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { useUserStore } from "@/lib/states/userStore";
 import { ethers } from "ethers";
 import { connect } from "http2";
-import { ContractActions } from "@/utils/connectEthersContract";
+import { ContractActions } from "@/utils/contractActions";
 import ToolBar from "./ToolBar";
 
 const ContractsList = () => {

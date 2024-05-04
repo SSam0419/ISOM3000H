@@ -2,7 +2,7 @@
 import { MilestoneStatus, Project } from "@/lib/models/projects";
 import { useContractStore } from "@/lib/states/contractStore";
 import { useUserStore } from "@/lib/states/userStore";
-import { ContractActions } from "@/utils/connectEthersContract";
+import { ContractActions } from "@/utils/contractActions";
 import {
   Button,
   Chip,

@@ -24,7 +24,7 @@ import {
 } from "@nextui-org/modal";
 import SignUpButton from "./SignUpButton";
 import { usePathname } from "next/navigation";
-import { ContractActions } from "@/utils/connectEthersContract";
+import { ContractActions } from "@/utils/contractActions";
 
 const Navbar = () => {
   const path = usePathname();

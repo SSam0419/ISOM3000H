@@ -444,9 +444,12 @@ export const ContractActions = {
     const contract = await connectUserManagerContract();
     if (!contract) return;
 
-    const user = await contract.users(userAddress);
-    console.log(user);
-    return user;
+    try {
+      const user = await contract.users(userAddress);
+      return user;
+    } catch (error) {
+      throw error;
+    }
   },
   registerUser: async ({
     username,

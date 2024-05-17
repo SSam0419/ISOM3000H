@@ -42,25 +42,15 @@ const Navbar = () => {
     });
 
     setAccounts([]);
-    if (accounts.length > 1) {
-      const accountIndex = localStorage.getItem("selectedAccountIndex");
-      if (accountIndex) {
-        setAddress(accounts[parseInt(accountIndex)]);
-        const user = await ContractActions.getUser(
-          accounts[parseInt(accountIndex)]
-        );
-        setUsername(user.name || "");
-      } else {
-        onOpen();
-        setAccounts(accounts);
-      }
-    } else {
-      setAddress(accounts[0]);
+
+    setAddress(accounts[0]);
+    try {
       const user = await ContractActions.getUser(accounts[0]);
       setUsername(user.name || "");
-    }
+    } catch (error) {}
+
     setIsLoading(false);
-  }, [onOpen, setAddress]);
+  }, [setAddress]);
 
   useEffect(() => {
     if (!(window as any).ethereum) {
